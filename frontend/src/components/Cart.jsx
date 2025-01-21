@@ -8,7 +8,7 @@ function Cart({ token }) {
   useEffect(() => {
     if (token) {
       const fetchCart = async () => {
-        const response = await axios.get('http://localhost:5000/cart/1');
+        const response = await axios.get('http://localhost:5000/cart', {headers: { Authorization: `Bearer ${token}` },});
         setCart(response.data);
       };
 
@@ -17,23 +17,41 @@ function Cart({ token }) {
   }, [token]);
 
   const removeFromCart = async (productId) => {
-    await axios.delete(`http://localhost:5000/cart/1/${productId}`);
+    await axios.delete(`http://localhost:5000/cart/${productId}`, {headers: { Authorization: `Bearer ${token}` }});
     setCart(cart.filter(item => item.product_id !== productId));
   };
 
-  const updateQuantity = async (productId, newQuantity) => {
-    if (newQuantity <= 0) return; // Avoid updating to non-positive quantities
+  // const updateQuantity = async (productId, newQuantity) => {
+  //   if (newQuantity <= 0) return; // Avoid updating to non-positive quantities
     
-    try {
-      await axios.put(`http://localhost:5000/cart/1/${productId}`, { quantity: newQuantity });
-      setCart(cart.map(item =>
-        item.product_id === productId ? { ...item, quantity: newQuantity } : item
-      ));
-    } catch (error) {
-      setNotification({ message: 'Error updating quantity', type: 'error' });
-      setTimeout(() => setNotification(null), 2000);
-    }
-  };
+  //   try {
+  //     await axios.put(`http://localhost:5000/cart/${productId}`, {headers: { Authorization: `Bearer ${token}` }},{ quantity: newQuantity });
+  //     setCart(cart.map(item =>
+  //       item.product_id === productId ? { ...item, quantity: newQuantity } : item
+  //     ));
+  //   } catch (error) {
+  //     setNotification({ message: 'Error updating quantity', type: 'error' });
+  //     setTimeout(() => setNotification(null), 2000);
+  //   }
+  // };
+
+const updateQuantity = async (productId, newQuantity) => {
+  if (newQuantity <= 0) return; // Avoid updating to non-positive quantities
+  
+  try {
+    await axios.put(
+      `http://localhost:5000/cart/${productId}`, 
+      { quantity: newQuantity }, // Body (data)
+      { headers: { Authorization: `Bearer ${token}` } } // Config (headers)
+    );
+    setCart(cart.map(item =>
+      item.product_id === productId ? { ...item, quantity: newQuantity } : item
+    ));
+  } catch (error) {
+    setNotification({ message: 'Error updating quantity', type: 'error' });
+    setTimeout(() => setNotification(null), 2000);
+  }
+};
 
   const checkOut = () => {
     setNotification({ message: 'Sorry, Checkout function is not done yet.', type: 'error' });

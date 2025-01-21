@@ -22,7 +22,7 @@ function ProductList({ token }) {
 
     const fetchCart = async () => {
       if (!token) return;
-      const response = await axios.get('http://localhost:5000/cart/1'); // Replace `1` with actual user ID
+      const response = await axios.get('http://localhost:5000/cart', {headers: { Authorization: `Bearer ${token}` },});
       const productIds = response.data.map((item) => item.product_id);
       setCartProductIds(new Set(productIds));
       setCart(response.data);
@@ -32,40 +32,51 @@ function ProductList({ token }) {
     fetchCart();
   }, [token]);
 
-  const addToCart = async (productId) => {
-    if (!token) {
-      alert('Please login to add to cart');
-      setNotification({ message: 'Please login to add to cart.', type: 'error' });
-      setTimeout(() => setNotification(null), 2000);
-      return;
-    }
+const addToCart = async (productId) => {
+  if (!token) {
+    alert('Please login to add to cart');
+    setNotification({ message: 'Please login to add to cart.', type: 'error' });
+    setTimeout(() => setNotification(null), 2000);
+    return;
+  }
 
-    const selectedQuantity = quantity[productId] || 1; // Default to 1 if no quantity is selected
+  const selectedQuantity = quantity[productId] || 1; // Default to 1 if no quantity is selected
 
-    // Set loading for the button
-    setLoadingProductId(productId);
+  // Set loading for the button
+  setLoadingProductId(productId);
 
-    try {
-      // Simulate a delay of 2 seconds before adding to cart
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+  try {
+    // Simulate a delay of 2 seconds before adding to cart
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      const response = await axios.post('http://localhost:5000/cart', { userId: 1, productId, quantity: selectedQuantity });
-      setCart([...cart, response.data]);
-      setCartProductIds(new Set([...cartProductIds, productId])); // Update cart product IDs
+    const response = await axios.post(
+      'http://localhost:5000/cart',
+      { productId, quantity: selectedQuantity },
+      { headers: { Authorization: `Bearer ${token}` } } // Send token in Authorization header
+    );
 
-      // Show notification
-      setNotification({ message: `Product has been added to your cart!`, type: 'success' });
+    // Update cart state
+    setCart([...cart, response.data]);
+    setCartProductIds(new Set([...cartProductIds, productId])); // Update cart product IDs
 
-      // Hide notification after 3 seconds
-      setTimeout(() => setNotification(null), 2000);
-    } catch (error) {
-      setNotification({ message: 'Failed to add product to cart.', type: 'error' });
-      setTimeout(() => setNotification(null), 2000);
-    }
+    // Show success notification
+    setNotification({ message: `Product has been added to your cart!`, type: 'success' });
 
+    // Hide notification after 3 seconds
+    setTimeout(() => setNotification(null), 2000);
+  } catch (error) {
+    // Show error notification
+    const errorMessage =
+      error.response?.data?.message || 'Failed to add product to cart. Please try again later.';
+    setNotification({ message: errorMessage, type: 'error' });
+
+    setTimeout(() => setNotification(null), 2000);
+  } finally {
     // Reset loading state
     setLoadingProductId(null);
-  };
+  }
+};
+
 
   const handleQuantityChange = (productId, value) => {
     if (value >= 1) {

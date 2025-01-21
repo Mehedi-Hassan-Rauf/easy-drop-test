@@ -20,12 +20,12 @@ app.post('/register', async (req, res) => {
   const { username, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
   knex('users').insert({ username, password: hashedPassword })
-    .then(async () => {
-      // After successful registration, generate a token
-      const token = jwt.sign({ username }, process.env.JWT_SECRET);
-      res.status(201).json({ token }); // Send the token in the response
-    })
-    .catch(err => res.status(500).send(err));
+  .then(async (result) => {
+    const user = await knex('users').where({ username }).first(); // Fetch the user to get the ID
+    const token = jwt.sign({ id: user.id, username }, process.env.JWT_SECRET);
+    res.status(201).json({ token });
+  })
+  .catch(err => res.status(500).send(err));
 });
 
 app.post('/login', async (req, res) => {
@@ -40,33 +40,77 @@ app.post('/login', async (req, res) => {
 });
 
 // Cart Routes
+// app.post('/cart', (req, res) => {
+//   const { token, productId, quantity } = req.body;
+//   const getToken = token.split(' ')[1];
+//   const decoded = jwt.verify(getToken, process.env.JWT_SECRET);
+//   const userId = decoded.id;
+//   console.log(userId)
+//   knex('cart').insert({ user_id: userId, product_id: productId, quantity })
+//     .then(() => res.status(201).send('Product added to cart'))
+//     .catch(err => res.status(500).send(err));
+// });
+
 app.post('/cart', (req, res) => {
-  const { userId, productId, quantity } = req.body;
-  knex('cart').insert({ user_id: userId, product_id: productId, quantity })
-    .then(() => res.status(201).send('Product added to cart'))
-    .catch(err => res.status(500).send(err));
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).send('Authorization header missing');
+    }
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    knex('cart').insert({ user_id: userId, product_id: req.body.productId, quantity: req.body.quantity })
+      .then(() => res.status(201).send('Product added to cart'))
+      .catch(err => res.status(500).send(err));
+  } catch (err) {
+    return res.status(403).send('Invalid or expired token');
+  }
 });
 
-app.get('/cart/:userId', (req, res) => {
+
+app.get('/cart', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send('Authorization header missing');
+  }
+  const token = authHeader.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const userId = decoded.id;
   knex('cart')
     .join('products', 'cart.product_id', '=', 'products.id')
-    .where({ user_id: req.params.userId })
+    .where({ user_id: userId })
     .then(cart => res.json(cart))
     .catch(err => res.status(500).send(err));
 });
 
-app.delete('/cart/:userId/:productId', (req, res) => {
+app.delete('/cart/:productId', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send('Authorization header missing');
+  }
+  const token = authHeader.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const userId = decoded.id;
   knex('cart')
-    .where({ user_id: req.params.userId, product_id: req.params.productId })
+    .where({ user_id: userId, product_id: req.params.productId })
     .del()
     .then(() => res.status(200).send('Product removed from cart'))
     .catch(err => res.status(500).send(err));
 });
 
-app.put('/cart/:userId/:productId', (req, res) => {
+app.put('/cart/:productId', (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send('Authorization header missing');
+  }
+  const token = authHeader.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const userId = decoded.id;
   const { quantity } = req.body;
   knex('cart')
-    .where({ user_id: req.params.userId, product_id: req.params.productId })
+    .where({ user_id: userId, product_id: req.params.productId })
     .update({ quantity })
     .then(() => res.status(200).send('Cart updated'))
     .catch(err => res.status(500).send(err));
