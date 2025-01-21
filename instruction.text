@@ -1,0 +1,60 @@
+-------------------------------Project Setup Instructions----------------------------------------
+Follow these steps to clone the repository, set up the database, and run the project on your machine.
+
+1. Clone the Repository
+   Open a terminal or command prompt.
+   Navigate to the directory where you want to clone the project.
+   Run the following command:
+   => git clone [your-repo-url]
+   Navigate into the project directory:
+   => cd [project-folder-name]
+
+2. Install Backend Dependencies
+   Ensure you have Node.js and npm installed on your machine. If not, download and install them from Node.js Downloads.
+   Install backend dependencies in which directory the backend package.json is located:
+   => npm install
+
+3. Install frontend dependencies:
+   enter the frontend directory then run this command
+   => npm install
+
+4. Set Up the Database
+   Ensure you have MySQL installed on your machine. If not, download and install it from MySQL Downloads.
+   Open your MySQL client (e.g., MySQL Workbench, command line, or phpMyAdmin).
+   Create a new database by using this command in MySQL command line:
+   => CREATE DATABASE ecommerce_cart;
+   Import the database_backup.sql file into the database:
+   Using Command Line:
+   => mysql -u root -p ecommerce_cart < /path/to/database_backup.sql
+   Using MySQL Workbench:
+   Open MySQL Workbench and connect to your MySQL server.
+   Select your newly created database.
+   Go to File > Run SQL Script:
+   => select database_backup.sql 
+   
+5. Configure Environment Variables
+   Go to the backend directory.
+   Create a .env file
+   Add the following environment variables to the .env file:
+   =>  DB_PORT=3309
+       DB_HOST=127.0.0.1
+       DB_USER=root
+       DB_PASSWORD=m0y0s0q0l0@
+       DB_NAME=ecommerce_cart
+       JWT_SECRET=mysecretkey
+
+6. Run the Backend
+   From the directory where backend package.json is located, start the backend server:
+   => npm start dev
+   The backend should now be running on http://localhost:5000.
+
+7. Run the Frontend
+   Navigate to the frontend directory:
+   => cd frontend
+   Start the frontend server:
+   => npm run dev
+   The frontend should now be running on http://localhost:3000 or http://localhost:5173
+
+8. Verify the Setup
+   Open your browser and go to http://localhost:3000 or http://localhost:5173
+   Test the functionality of the application, including database interactions.
