@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 function Login({ setToken }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [notification, setNotification] = useState(null); // Notification state
 
   // Check if token exists in localStorage on page load
   useEffect(() => {
@@ -20,13 +21,21 @@ function Login({ setToken }) {
       const token = response.data.token;
       setToken(token); // Set token in the parent component's state
       localStorage.setItem('token', token); // Store token in localStorage
+      setNotification({ message: 'Login successful.', type: 'success' });
+      setTimeout(() => setNotification(null), 2000);
     } catch (error) {
-      alert('Invalid credentials');
+      setNotification({ message: 'Invalid credentials.', type: 'error' });
+      setTimeout(() => setNotification(null), 2000);
     }
   };
 
   return (
     <div className="flex items-center h-full justify-center bg-gray-100">
+      {notification && (
+        <div className={`fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+          {notification.message}
+        </div>
+      )}
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Login</h2>
         <div className="mb-4">

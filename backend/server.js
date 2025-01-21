@@ -71,6 +71,7 @@ app.put('/cart/:userId/:productId', (req, res) => {
     .then(() => res.status(200).send('Cart updated'))
     .catch(err => res.status(500).send(err));
 });
+
 // Check if a specific product exists in the cart
 app.get('/cart/:userId/:productId', (req, res) => {
   const { userId, productId } = req.params;

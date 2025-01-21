@@ -118,10 +118,10 @@ function ProductList({ token }) {
 
               <button
                 onClick={() => addToCart(product.id)}
-                className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition ${loadingProductId === product.id ? 'cursor-wait opacity-50' : ''}`}
+                className={`${cartProductIds.has(product.id) ? "border border-blue-500 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600"} px-4 py-2 rounded transition ${loadingProductId === product.id ? 'cursor-wait opacity-50' : ''}`}
                 disabled={loadingProductId === product.id || cartProductIds.has(product.id)} // Disable button when loading or already in cart
               >
-                {cartProductIds.has(product.id) ? 'In Cart' : loadingProductId === product.id ? 'Adding...' : 'Add to Cart'}
+                {cartProductIds.has(product.id) ? 'Added' : loadingProductId === product.id ? 'Adding...' : 'Add to Cart'}
               </button>
             </div>
           ))}

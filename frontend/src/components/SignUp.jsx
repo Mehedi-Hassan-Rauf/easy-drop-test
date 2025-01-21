@@ -5,25 +5,35 @@ function SignUp({ setToken }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [notification, setNotification] = useState(null); // Notification state
 
   const signUp = async () => {
     if (password !== confirmPassword) {
-      alert("Passwords don't match!");
+      setNotification({ message: 'Passwords do not match.', type: 'error' });
+      setTimeout(() => setNotification(null), 2000);
       return;
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/signup', { username, password });
+      const response = await axios.post('http://localhost:5000/register', { username, password });
       const token = response.data.token;
       setToken(token); // Set token in the parent component's state
       localStorage.setItem('token', token); // Store token in localStorage
+      setNotification({ message: 'Sign up successful.', type: 'success' });
+      setTimeout(() => setNotification(null), 2000);
     } catch (error) {
-      alert('Error signing up');
+      setNotification({ message: 'Error signing up.', type: 'error' });
+      setTimeout(() => setNotification(null), 2000);
     }
   };
 
   return (
     <div className="flex items-center h-full justify-center bg-gray-100">
+      {notification && (
+        <div className={`fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+          {notification.message}
+        </div>
+      )}
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">Sign Up</h2>
         <div className="mb-4">
